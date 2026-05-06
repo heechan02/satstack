@@ -21,3 +21,6 @@ local.properties
 # External build files
 .externalNativeBuild/
 .cxx/
+
+*.md
+image/
