@@ -9,21 +9,32 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 // androidx.navigation:navigation-compose
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.satstack.nav.Route
+import com.example.satstack.ui.addentry.AddEntryScreen
 import com.example.satstack.ui.analytics.AnalyticsScreen
 import com.example.satstack.ui.dashboard.DashboardScreen
 import com.example.satstack.ui.settings.SettingsScreen
@@ -31,6 +42,7 @@ import com.example.satstack.ui.theme.SatStackTheme
 import com.example.satstack.ui.vault.VaultScreen
 
 class MainActivity : FragmentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -40,6 +52,8 @@ class MainActivity : FragmentActivity() {
                 val backStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = backStackEntry?.destination?.route
 
+                val showChrome = currentRoute != Route.VAULT.name && currentRoute != Route.ADD_ENTRY.name
+
                 val navItems = listOf(
                     Triple(Route.DASHBOARD, "Dashboard", Icons.Filled.Home as ImageVector),
                     Triple(Route.ANALYTICS, "Analytics", Icons.Filled.Analytics as ImageVector),
@@ -47,8 +61,22 @@ class MainActivity : FragmentActivity() {
                 )
 
                 Scaffold(
+                    topBar = {
+                        if (showChrome) {
+                            CenterAlignedTopAppBar(
+                                title = {
+                                    Text(
+                                        "Sat Stack",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 22.sp
+                                    )
+                                },
+                                colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
+                            )
+                        }
+                    },
                     bottomBar = {
-                        if (currentRoute != Route.VAULT.name) {
+                        if (showChrome) {
                             NavigationBar {
                                 navItems.forEach { (route, label, icon) ->
                                     NavigationBarItem(
@@ -60,8 +88,13 @@ class MainActivity : FragmentActivity() {
                                                 restoreState = true
                                             }
                                         },
-                                        icon = { Icon(icon, contentDescription = label) },
-                                        label = { Text(label) }
+                                        icon = { Icon(icon, contentDescription = label, modifier = Modifier.size(28.dp)) },
+                                        label = { Text(label, fontSize = 13.sp) },
+                                        colors = NavigationBarItemDefaults.colors(
+                                            indicatorColor = MaterialTheme.colorScheme.primary,
+                                            selectedIconColor = Color.White,
+                                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                                        )
                                     )
                                 }
                             }
@@ -80,7 +113,14 @@ class MainActivity : FragmentActivity() {
                                 }
                             })
                         }
-                        composable(Route.DASHBOARD.name) { DashboardScreen() }
+                        composable(Route.DASHBOARD.name) {
+                            DashboardScreen(onAddEntry = {
+                                navController.navigate(Route.ADD_ENTRY.name)
+                            })
+                        }
+                        composable(Route.ADD_ENTRY.name) {
+                            AddEntryScreen(onBack = { navController.popBackStack() })
+                        }
                         composable(Route.ANALYTICS.name) { AnalyticsScreen() }
                         composable(Route.SETTINGS.name) { SettingsScreen() }
                     }
