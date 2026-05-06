@@ -23,4 +23,5 @@ local.properties
 .cxx/
 
 *.md
+!README.md
 image/

@@ -1,7 +1,7 @@
 package com.example.satstack
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 // androidx.compose.material:material-icons-extended
@@ -28,8 +28,9 @@ import com.example.satstack.ui.analytics.AnalyticsScreen
 import com.example.satstack.ui.dashboard.DashboardScreen
 import com.example.satstack.ui.settings.SettingsScreen
 import com.example.satstack.ui.theme.SatStackTheme
+import com.example.satstack.ui.vault.VaultScreen
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -47,29 +48,38 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     bottomBar = {
-                        NavigationBar {
-                            navItems.forEach { (route, label, icon) ->
-                                NavigationBarItem(
-                                    selected = currentRoute == route.name,
-                                    onClick = {
-                                        navController.navigate(route.name) {
-                                            popUpTo(Route.DASHBOARD.name) { saveState = true }
-                                            launchSingleTop = true
-                                            restoreState = true
-                                        }
-                                    },
-                                    icon = { Icon(icon, contentDescription = label) },
-                                    label = { Text(label) }
-                                )
+                        if (currentRoute != Route.VAULT.name) {
+                            NavigationBar {
+                                navItems.forEach { (route, label, icon) ->
+                                    NavigationBarItem(
+                                        selected = currentRoute == route.name,
+                                        onClick = {
+                                            navController.navigate(route.name) {
+                                                popUpTo(Route.DASHBOARD.name) { saveState = true }
+                                                launchSingleTop = true
+                                                restoreState = true
+                                            }
+                                        },
+                                        icon = { Icon(icon, contentDescription = label) },
+                                        label = { Text(label) }
+                                    )
+                                }
                             }
                         }
                     }
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = Route.DASHBOARD.name,
+                        startDestination = Route.VAULT.name,
                         modifier = Modifier.padding(innerPadding)
                     ) {
+                        composable(Route.VAULT.name) {
+                            VaultScreen(onAuthSuccess = {
+                                navController.navigate(Route.DASHBOARD.name) {
+                                    popUpTo(Route.VAULT.name) { inclusive = true }
+                                }
+                            })
+                        }
                         composable(Route.DASHBOARD.name) { DashboardScreen() }
                         composable(Route.ANALYTICS.name) { AnalyticsScreen() }
                         composable(Route.SETTINGS.name) { SettingsScreen() }

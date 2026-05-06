@@ -59,6 +59,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     // androidx.room:room-compiler (KSP)
     ksp(libs.androidx.room.compiler)
+    // androidx.biometric:biometric
+    implementation(libs.androidx.biometric)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
