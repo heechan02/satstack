@@ -2,6 +2,7 @@ package com.example.satstack.ui.dashboard
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,17 +32,25 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.material3.rememberTooltipState
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -63,6 +73,9 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = viewModel()
 ) {
     val transactions by viewModel.transactions.collectAsState()
+    val isPrivate by viewModel.isPrivate.collectAsState()
+    val scope = rememberCoroutineScope()
+    val tooltipState = rememberTooltipState()
     val totalSats = transactions.sumOf { it.sats }
     val totalFiat = transactions.sumOf { it.fiatAmount }
     val currency = transactions.firstOrNull()?.currency ?: "GBP"
@@ -84,9 +97,13 @@ fun DashboardScreen(
             modifier = Modifier.padding(vertical = 12.dp)
         )
 
-        // Stack card — centred content
+        // Stack card — double-tap toggles privacy mode
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .pointerInput(Unit) {
+                    detectTapGestures(onDoubleTap = { viewModel.togglePrivacy() })
+                },
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
@@ -104,22 +121,31 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "%,d SATS".format(totalSats),
+                        if (isPrivate) "****** SATS" else "%,d SATS".format(totalSats),
                         style = MaterialTheme.typography.displaySmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        Icons.Default.Visibility,
-                        contentDescription = "Toggle visibility",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    TooltipBox(
+                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                        tooltip = { PlainTooltip { Text("Double-tap card to hide balance") } },
+                        state = tooltipState
+                    ) {
+                        Icon(
+                            if (isPrivate) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            contentDescription = "Toggle visibility",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable { scope.launch { tooltipState.show() } }
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    "($currencySymbol${"%.2f".format(totalFiat)} ≈ ${"%.3f".format(totalSats / 100_000_000.0)} BTC)",
+                    if (isPrivate) "Double-tap to reveal your balance"
+                    else "($currencySymbol${"%.2f".format(totalFiat)} ≈ ${"%.3f".format(totalSats / 100_000_000.0)} BTC)",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center

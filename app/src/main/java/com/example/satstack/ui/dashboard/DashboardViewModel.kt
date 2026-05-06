@@ -5,8 +5,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.satstack.data.SatStackDatabase
 import com.example.satstack.data.Transaction
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -19,6 +21,13 @@ class DashboardViewModel(application: Application) : AndroidViewModel(applicatio
 
     // Placeholder until DataStore is wired in step 8 (Settings)
     val milestoneGoal: Long = 1_000_000L
+
+    private val _isPrivate = MutableStateFlow(false)
+    val isPrivate: StateFlow<Boolean> = _isPrivate.asStateFlow()
+
+    fun togglePrivacy() {
+        _isPrivate.value = !_isPrivate.value
+    }
 
     fun delete(transaction: Transaction) {
         viewModelScope.launch { dao.deleteById(transaction.id) }
