@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 // androidx.compose.material:material-icons-extended
@@ -41,10 +43,16 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.foundation.clickable
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import com.example.satstack.ui.addentry.AddEntrySheetContent
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,17 +77,26 @@ private val Green = Color(0xFF4CAF50)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    onAddEntry: () -> Unit,
     viewModel: DashboardViewModel = viewModel()
 ) {
     val transactions by viewModel.transactions.collectAsState()
     val isPrivate by viewModel.isPrivate.collectAsState()
     val scope = rememberCoroutineScope()
     val tooltipState = rememberTooltipState()
+    var showAddSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val listState = rememberLazyListState()
+
+    // Scroll to top whenever a new entry is added
+    LaunchedEffect(transactions.size) {
+        if (transactions.isNotEmpty()) listState.animateScrollToItem(0)
+    }
     val totalSats = transactions.sumOf { it.sats }
-    val totalFiat = transactions.sumOf { it.fiatAmount }
-    val currency = transactions.firstOrNull()?.currency ?: "GBP"
-    val currencySymbol = if (currency == "GBP") "£" else "$"
+    // Use the most recent transaction's currency for the stack card subtitle.
+    // Each history item renders its own currency symbol independently.
+    val stackCurrency = transactions.firstOrNull()?.currency ?: "GBP"
+    val stackSymbol = if (stackCurrency == "GBP") "£" else "$"
+    val totalFiat = transactions.filter { it.currency == stackCurrency }.sumOf { it.fiatAmount }
     val milestoneGoal = viewModel.milestoneGoal
     val progress = if (milestoneGoal > 0) (totalSats.toFloat() / milestoneGoal).coerceIn(0f, 1f) else 0f
     val progressPercent = (progress * 100).toInt()
@@ -145,7 +162,7 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     if (isPrivate) "Double-tap to reveal your balance"
-                    else "($currencySymbol${"%.2f".format(totalFiat)} ≈ ${"%.3f".format(totalSats / 100_000_000.0)} BTC)",
+                    else "($stackSymbol${"%.2f".format(totalFiat)} ≈ ${"%.5f".format(totalSats / 100_000_000.0)} BTC)",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -212,6 +229,7 @@ fun DashboardScreen(
                 }
             } else {
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 88.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -244,14 +262,14 @@ fun DashboardScreen(
                                 }
                             }
                         ) {
-                            TransactionItem(transaction, currencySymbol)
+                            TransactionItem(transaction)
                         }
                     }
                 }
             }
 
             FloatingActionButton(
-                onClick = onAddEntry,
+                onClick = { showAddSheet = true },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(bottom = 16.dp, end = 4.dp),
@@ -263,10 +281,26 @@ fun DashboardScreen(
             }
         }
     }
+
+    // Add DCA Entry bottom sheet — slides up over Dashboard without navigating away
+    if (showAddSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showAddSheet = false },
+            sheetState = sheetState,
+            dragHandle = {
+                androidx.compose.material3.BottomSheetDefaults.DragHandle(
+                    color = Color(0xFFFF9800)
+                )
+            }
+        ) {
+            AddEntrySheetContent(onDismiss = { showAddSheet = false })
+        }
+    }
 }
 
 @Composable
-private fun TransactionItem(transaction: Transaction, currencySymbol: String) {
+private fun TransactionItem(transaction: Transaction) {
+    val currencySymbol = if (transaction.currency == "GBP") "£" else "$"
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),

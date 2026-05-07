@@ -61,6 +61,8 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     // androidx.biometric:biometric
     implementation(libs.androidx.biometric)
+    // androidx.datastore:datastore-preferences
+    implementation(libs.androidx.datastore.preferences)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

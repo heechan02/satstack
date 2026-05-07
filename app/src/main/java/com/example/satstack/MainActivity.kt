@@ -34,7 +34,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.satstack.nav.Route
-import com.example.satstack.ui.addentry.AddEntryScreen
 import com.example.satstack.ui.analytics.AnalyticsScreen
 import com.example.satstack.ui.dashboard.DashboardScreen
 import com.example.satstack.ui.settings.SettingsScreen
@@ -52,7 +51,7 @@ class MainActivity : FragmentActivity() {
                 val backStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = backStackEntry?.destination?.route
 
-                val showChrome = currentRoute != Route.VAULT.name && currentRoute != Route.ADD_ENTRY.name
+                val showChrome = currentRoute != Route.VAULT.name
 
                 val navItems = listOf(
                     Triple(Route.DASHBOARD, "Dashboard", Icons.Filled.Home as ImageVector),
@@ -114,12 +113,7 @@ class MainActivity : FragmentActivity() {
                             })
                         }
                         composable(Route.DASHBOARD.name) {
-                            DashboardScreen(onAddEntry = {
-                                navController.navigate(Route.ADD_ENTRY.name)
-                            })
-                        }
-                        composable(Route.ADD_ENTRY.name) {
-                            AddEntryScreen(onBack = { navController.popBackStack() })
+                            DashboardScreen()
                         }
                         composable(Route.ANALYTICS.name) { AnalyticsScreen() }
                         composable(Route.SETTINGS.name) { SettingsScreen() }
