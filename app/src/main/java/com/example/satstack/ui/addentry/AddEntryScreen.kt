@@ -46,8 +46,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val Orange = Color(0xFFFF9800)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEntrySheetContent(
@@ -96,9 +94,9 @@ fun AddEntrySheetContent(
             textStyle = MaterialTheme.typography.headlineMedium.copy(fontSize = 32.sp),
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Orange,
-                unfocusedBorderColor = Orange,   // always orange
-                focusedLabelColor = Orange,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.primary,   // always orange
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
             )
         )
         // Preview line — shows implied BTC price once both fields have values
@@ -168,8 +166,8 @@ fun AddEntrySheetContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
-            shape = RoundedCornerShape(50),
-            colors = ButtonDefaults.buttonColors(containerColor = Orange, contentColor = Color.Black)
+            shape = RoundedCornerShape(26.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White)
         ) {
             Text("Save Entry", fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }

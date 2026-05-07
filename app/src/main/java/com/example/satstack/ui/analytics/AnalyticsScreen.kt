@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,7 +22,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -62,13 +62,20 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        Text(
+            "Analytics",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
+        )
+
         // Offline banner
         if (isOffline) {
             Surface(
-                color = Color(0xFFB71C1C),
+                color = Color(0xFFD32F2F),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -84,16 +91,15 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
         // Fear & Greed card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(4.dp)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Market Analytics", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text("Market Analytics", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(12.dp))
 
                 if (isLoading && fngEntries.isEmpty()) {
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Color(0xFFFF6600))
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 } else if (fngEntries.isNotEmpty()) {
                     val current = fngEntries.first()
@@ -107,15 +113,20 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // Progress bar
-                    LinearProgressIndicator(
-                        progress = { current.value / 100f },
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(12.dp)
-                            .clip(RoundedCornerShape(6.dp)),
-                        color = fngColor,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(current.value / 100f)
+                                .fillMaxHeight()
+                                .background(fngColor, RoundedCornerShape(topEnd = 6.dp, bottomEnd = 6.dp))
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -142,11 +153,10 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
         if (fngEntries.size >= 4) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(4.dp)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Historical Values", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text("Historical Values", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(modifier = Modifier.height(12.dp))
 
                     val labels = listOf("Now", "Yesterday", "Last Week", "Last Month")
@@ -158,7 +168,7 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text(labels.getOrElse(i) { "" }, fontWeight = FontWeight.Medium)
+                                Text(labels.getOrElse(i) { "" }, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                                 Text(
                                     formatDate(entry.timestamp),
                                     fontSize = 12.sp,
@@ -181,7 +191,7 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
                                         fontWeight = FontWeight.Medium
                                     )
                                 }
-                                Text("${entry.value}", fontWeight = FontWeight.Bold)
+                                Text("${entry.value}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                     }
@@ -198,11 +208,10 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(4.dp)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Your Portfolio", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text("Your Portfolio", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(modifier = Modifier.height(12.dp))
                     HorizontalDivider()
                     Spacer(modifier = Modifier.height(8.dp))
@@ -276,8 +285,8 @@ private fun PortfolioRow(label: String, value: String) {
             .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, fontWeight = FontWeight.Medium)
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
     }
 }
 

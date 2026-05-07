@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -32,7 +33,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.SwipeToDismissBox
@@ -189,16 +189,20 @@ fun DashboardScreen(
             )
         }
         Spacer(modifier = Modifier.height(6.dp))
-        LinearProgressIndicator(
-            progress = { progress },
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(10.dp)
-                .clip(RoundedCornerShape(5.dp)),
-            color = MaterialTheme.colorScheme.primary,
-            trackColor = MaterialTheme.colorScheme.surface,
-            drawStopIndicator = {} // removes the orange dot at the end
-        )
+                .clip(RoundedCornerShape(5.dp))
+                .background(MaterialTheme.colorScheme.surface)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(progress)
+                    .fillMaxHeight()
+                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(topEnd = 5.dp, bottomEnd = 5.dp))
+            )
+        }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             "Goal: ${"%,d".format(milestoneGoal)} Sats",
@@ -290,7 +294,7 @@ fun DashboardScreen(
             sheetState = sheetState,
             dragHandle = {
                 androidx.compose.material3.BottomSheetDefaults.DragHandle(
-                    color = Color(0xFFFF9800)
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         ) {
@@ -326,7 +330,6 @@ private fun TransactionItem(transaction: Transaction) {
                 Text(
                     formatDate(transaction.date),
                     style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 17.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -342,8 +345,7 @@ private fun TransactionItem(transaction: Transaction) {
                 "+ %,d Sats".format(transaction.sats),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = Green,
-                fontSize = 16.sp
+                color = Green
             )
         }
     }
