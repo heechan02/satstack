@@ -1,8 +1,11 @@
 package com.example.satstack.ui.analytics
 
 import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,6 +54,15 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
     val exchangeUrl by vm.exchangeUrl.collectAsState()
     val isOffline by vm.isOffline.collectAsState()
     val isLoading by vm.isLoading.collectAsState()
+
+    // Register BroadcastReceiver for network state changes — android.net.ConnectivityManager
+    DisposableEffect(context) {
+        vm.setConnectivity(NetworkReceiver.isNetworkAvailable(context))
+        val receiver = NetworkReceiver { isConnected -> vm.setConnectivity(isConnected) }
+        @Suppress("DEPRECATION")
+        context.registerReceiver(receiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
+        onDispose { context.unregisterReceiver(receiver) }
+    }
 
     // Fetch on tab open and start 5-min refresh loop
     LaunchedEffect(Unit) {

@@ -1,5 +1,6 @@
 package com.example.satstack.ui.dashboard
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.LaunchedEffect
@@ -46,15 +48,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import kotlinx.coroutines.CoroutineScope
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.material3.TooltipState
 import com.example.satstack.ui.addentry.AddEntrySheetContent
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -63,7 +68,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 // androidx.lifecycle:lifecycle-viewmodel-compose
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.satstack.R
@@ -94,6 +98,8 @@ fun DashboardScreen(
     LaunchedEffect(transactions.size) {
         if (transactions.isNotEmpty()) listState.animateScrollToItem(0)
     }
+
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val totalSats = transactions.sumOf { it.sats }
     // Use the user's selected fiat currency from DataStore (set in Settings).
     // Each history item renders its own currency symbol independently.
@@ -102,91 +108,187 @@ fun DashboardScreen(
     val progress = if (milestoneGoal > 0) (totalSats.toFloat() / milestoneGoal).coerceIn(0f, 1f) else 0f
     val progressPercent = (progress * 100).toInt()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-    ) {
-        // Section header
-        Text(
-            "Dashboard",
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 12.dp)
-        )
-
-        // Stack card — double-tap toggles privacy mode
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .pointerInput(Unit) {
-                    detectTapGestures(onDoubleTap = { viewModel.togglePrivacy() })
-                },
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ) {
-            Column(
+    if (isLandscape) {
+        // Landscape: single scrollable LazyColumn — everything scrolls together
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                state = listState,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(bottom = 88.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    "Your Stack",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                item {
                     Text(
-                        if (isPrivate) "****** SATS" else "%,d SATS".format(totalSats),
-                        style = MaterialTheme.typography.displaySmall,
+                        "Dashboard",
+                        style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
                     )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = { PlainTooltip { Text("Double-tap card to hide balance") } },
-                        state = tooltipState
-                    ) {
-                        Icon(
-                            if (isPrivate) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = "Toggle visibility",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clickable { scope.launch { tooltipState.show() } }
-                        )
+                }
+                item {
+                    StackCard(isPrivate, totalSats, totalFiat, stackSymbol, tooltipState, scope) {
+                        viewModel.togglePrivacy()
                     }
                 }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    if (isPrivate) "Double-tap to reveal your balance"
-                    else "($stackSymbol${"%.2f".format(totalFiat)} ≈ ${"%.5f".format(totalSats / 100_000_000.0)} BTC)",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
+                item { MilestoneProgress(progress, progressPercent, milestoneGoal) }
+                item { Text("DCA History", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) }
+                transactionItems(transactions, onDelete = { viewModel.delete(it) })
+            }
+            FloatingActionButton(
+                onClick = { showAddSheet = true },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(bottom = 16.dp, end = 20.dp),
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = Color.White,
+                shape = CircleShape
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add DCA Entry")
             }
         }
+    } else {
+        // Portrait: stack card + progress bar pinned, DCA history scrolls independently
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+        ) {
+            Text(
+                "Dashboard",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(vertical = 12.dp)
+            )
+            StackCard(isPrivate, totalSats, totalFiat, stackSymbol, tooltipState, scope) {
+                viewModel.togglePrivacy()
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            MilestoneProgress(progress, progressPercent, milestoneGoal)
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("DCA History", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(8.dp))
+            Box(modifier = Modifier.weight(1f)) {
+                if (transactions.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            "No entries yet.\nTap + to add your first DCA.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 88.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        transactionItems(transactions, onDelete = { viewModel.delete(it) })
+                    }
+                }
+                FloatingActionButton(
+                    onClick = { showAddSheet = true },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(bottom = 16.dp, end = 4.dp),
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White,
+                    shape = CircleShape
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add DCA Entry")
+                }
+            }
+        }
+    }
 
-        Spacer(modifier = Modifier.height(16.dp))
+    // Add DCA Entry bottom sheet — slides up over Dashboard without navigating away
+    if (showAddSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showAddSheet = false },
+            sheetState = sheetState,
+            dragHandle = {
+                androidx.compose.material3.BottomSheetDefaults.DragHandle(
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        ) {
+            AddEntrySheetContent(onDismiss = { showAddSheet = false })
+        }
+    }
+}
 
-        // Milestone progress
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StackCard(
+    isPrivate: Boolean,
+    totalSats: Long,
+    totalFiat: Double,
+    stackSymbol: String,
+    tooltipState: TooltipState,
+    scope: CoroutineScope,
+    onDoubleTap: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                detectTapGestures(onDoubleTap = { onDoubleTap() })
+            },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Your Stack", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    if (isPrivate) "****** SATS" else "%,d SATS".format(totalSats),
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                TooltipBox(
+                    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                    tooltip = { PlainTooltip { Text("Double-tap card to hide balance") } },
+                    state = tooltipState
+                ) {
+                    Icon(
+                        if (isPrivate) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        contentDescription = "Toggle visibility",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { scope.launch { tooltipState.show() } }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                if (isPrivate) "Double-tap to reveal your balance"
+                else "($stackSymbol${"%.2f".format(totalFiat)} ≈ ${"%.5f".format(totalSats / 100_000_000.0)} BTC)",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+private fun MilestoneProgress(progress: Float, progressPercent: Int, milestoneGoal: Long) {
+    Column {
         Row(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                "Stacking Milestone Progress: ",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                "$progressPercent%",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary
-            )
+            Text("Stacking Milestone Progress: ", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
+            Text("$progressPercent%", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
         }
         Spacer(modifier = Modifier.height(6.dp))
         Box(
@@ -211,94 +313,56 @@ fun DashboardScreen(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.End
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // DCA History + FAB
-        Text(
-            "DCA History",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Box(modifier = Modifier.weight(1f)) {
-            if (transactions.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        "No entries yet.\nTap + to add your first DCA.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            } else {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 88.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(transactions, key = { it.id }) { transaction ->
-                        SwipeToDismissBox(
-                            state = rememberSwipeToDismissBoxState(
-                                confirmValueChange = { value ->
-                                    if (value == SwipeToDismissBoxValue.EndToStart) {
-                                        viewModel.delete(transaction)
-                                        true
-                                    } else false
-                                }
-                            ),
-                            enableDismissFromStartToEnd = false,
-                            modifier = Modifier.clip(RoundedCornerShape(24.dp)),
-                            backgroundContent = {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(Color(0xFFD32F2F))
-                                        .padding(end = 20.dp),
-                                    contentAlignment = Alignment.CenterEnd
-                                ) {
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = "Delete",
-                                        tint = Color.White
-                                    )
-                                }
-                            }
-                        ) {
-                            TransactionItem(transaction)
-                        }
-                    }
-                }
-            }
-
-            FloatingActionButton(
-                onClick = { showAddSheet = true },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(bottom = 16.dp, end = 4.dp),
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White,
-                shape = CircleShape
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add DCA Entry")
-            }
-        }
     }
+}
 
-    // Add DCA Entry bottom sheet — slides up over Dashboard without navigating away
-    if (showAddSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showAddSheet = false },
-            sheetState = sheetState,
-            dragHandle = {
-                androidx.compose.material3.BottomSheetDefaults.DragHandle(
-                    color = MaterialTheme.colorScheme.primary
+@OptIn(ExperimentalMaterial3Api::class)
+private fun LazyListScope.transactionItems(
+    transactions: List<Transaction>,
+    onDelete: (Transaction) -> Unit
+) {
+    if (transactions.isEmpty()) {
+        item {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "No entries yet.\nTap + to add your first DCA.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
                 )
             }
-        ) {
-            AddEntrySheetContent(onDismiss = { showAddSheet = false })
+        }
+    } else {
+        items(transactions, key = { it.id }) { transaction ->
+            SwipeToDismissBox(
+                state = rememberSwipeToDismissBoxState(
+                    confirmValueChange = { value ->
+                        if (value == SwipeToDismissBoxValue.EndToStart) {
+                            onDelete(transaction); true
+                        } else false
+                    }
+                ),
+                enableDismissFromStartToEnd = false,
+                modifier = Modifier.clip(RoundedCornerShape(24.dp)),
+                backgroundContent = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFFD32F2F))
+                            .padding(end = 20.dp),
+                        contentAlignment = Alignment.CenterEnd
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.White)
+                    }
+                }
+            ) {
+                TransactionItem(transaction)
+            }
         }
     }
 }

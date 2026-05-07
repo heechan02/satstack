@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import java.net.UnknownHostException
 import java.net.URL
 
 data class FngEntry(val value: Int, val label: String, val timestamp: Long)
@@ -58,6 +57,10 @@ class AnalyticsViewModel(application: Application) : AndroidViewModel(applicatio
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    fun setConnectivity(isConnected: Boolean) {
+        _isOffline.value = !isConnected
+    }
+
     fun refresh() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -97,10 +100,8 @@ class AnalyticsViewModel(application: Application) : AndroidViewModel(applicatio
                 .map { entry(it) }
             _fngEntries.value = entries
             _isOffline.value = false
-        } catch (e: UnknownHostException) {
-            _isOffline.value = true
         } catch (_: Exception) {
-            // API error (e.g. rate limit) — not a connectivity issue
+            // network or API error — connectivity state managed by NetworkReceiver
         } finally {
             _isLoading.value = false
         }
@@ -135,12 +136,8 @@ class AnalyticsViewModel(application: Application) : AndroidViewModel(applicatio
                 totalSpent = totalSpent,
                 lastUpdated = now
             )
-            _isOffline.value = false
-        } catch (e: UnknownHostException) {
-            _portfolio.value = _portfolio.value?.copy(btcPriceGbp = null, btcPriceUsd = null)
-            _isOffline.value = true
         } catch (_: Exception) {
-            // API error (e.g. rate limit) — not a connectivity issue
+            // network or API error — connectivity state managed by NetworkReceiver
         }
     }
 }
