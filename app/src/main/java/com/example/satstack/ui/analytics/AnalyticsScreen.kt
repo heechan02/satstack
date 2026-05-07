@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -191,19 +193,25 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                Text(
+                                    text = entry.label,
+                                    color = fngColor(entry.value),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
                                 Box(
+                                    contentAlignment = Alignment.Center,
                                     modifier = Modifier
-                                        .background(fngColor(entry.value), RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        .size(36.dp)
+                                        .background(fngColor(entry.value), CircleShape)
                                 ) {
                                     Text(
-                                        text = entry.label,
-                                        color = Color.White,
+                                        text = "${entry.value}",
+                                        color = fngTextColor(entry.value),
                                         fontSize = 12.sp,
-                                        fontWeight = FontWeight.Medium
+                                        fontWeight = FontWeight.Bold
                                     )
                                 }
-                                Text("${entry.value}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                     }
@@ -301,6 +309,9 @@ private fun PortfolioRow(label: String, value: String) {
         Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
     }
 }
+
+private fun fngTextColor(value: Int): Color =
+    if (value in 46..75) Color(0xFF1A1A1A) else Color.White
 
 private fun fngColor(value: Int): Color = when {
     value <= 25 -> Color(0xFFF44336)   // Extreme Fear — red
