@@ -1,6 +1,12 @@
 package com.example.satstack
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -46,9 +52,16 @@ import com.example.satstack.ui.vault.VaultScreen
 import kotlinx.coroutines.flow.map
 
 class MainActivity : FragmentActivity() {
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        createNotificationChannel()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1001)
+        }
         enableEdgeToEdge()
         setContent {
             val context = LocalContext.current
@@ -130,5 +143,18 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
+    }
+
+    private fun createNotificationChannel() {
+        val channel = NotificationChannel(
+            MILESTONE_CHANNEL_ID,
+            "Milestone Alerts",
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply { description = "Notifies when your sats stack reaches a milestone" }
+        getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+    }
+
+    companion object {
+        const val MILESTONE_CHANNEL_ID = "milestone_channel"
     }
 }

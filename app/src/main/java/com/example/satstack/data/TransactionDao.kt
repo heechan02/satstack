@@ -24,4 +24,7 @@ interface TransactionDao {
     // Synchronous delete used by TransactionProvider
     @Query("DELETE FROM transactions WHERE id = :id")
     fun deleteByIdSync(id: Int): Int
+
+    @Query("SELECT COALESCE(SUM(sats), 0) FROM transactions")
+    suspend fun totalSats(): Long
 }

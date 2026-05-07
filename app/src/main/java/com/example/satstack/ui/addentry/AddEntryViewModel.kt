@@ -1,14 +1,21 @@
 package com.example.satstack.ui.addentry
 
+import android.Manifest
 import android.app.Application
+import android.app.NotificationManager
+import android.content.pm.PackageManager
+import androidx.core.app.NotificationCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.example.satstack.MainActivity
+import com.example.satstack.R
 import com.example.satstack.data.appDataStore
 import com.example.satstack.data.DataStoreKeys
 import com.example.satstack.data.SatStackDatabase
 import com.example.satstack.data.Transaction
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -39,6 +46,7 @@ class AddEntryViewModel(
         val fiatVal = fiatInput.value.toDoubleOrNull() ?: return false
         if (satsVal <= 0 || fiatVal <= 0.0) return false
         viewModelScope.launch {
+            val totalBefore = dao.totalSats()
             dao.insert(
                 Transaction(
                     date = selectedDateMs.value,
@@ -47,7 +55,25 @@ class AddEntryViewModel(
                     sats = satsVal
                 )
             )
+            val totalAfter = dao.totalSats()
+            val milestone = dataStore.data.first()[DataStoreKeys.MILESTONE_GOAL] ?: 1_000_000L
+            if (totalBefore < milestone && totalAfter >= milestone) {
+                sendMilestoneNotification(milestone)
+            }
         }
         return true
+    }
+
+    private fun sendMilestoneNotification(milestone: Long) {
+        val app = getApplication<Application>()
+        if (app.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
+        val notification = NotificationCompat.Builder(app, MainActivity.MILESTONE_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("Milestone reached!")
+            .setContentText("Your stack hit ${"%,d".format(milestone)} sats!")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .build()
+        app.getSystemService(NotificationManager::class.java).notify(1, notification)
     }
 }
