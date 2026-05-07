@@ -68,6 +68,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.satstack.R
 import com.example.satstack.data.Transaction
+import com.example.satstack.data.currencySymbol
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -81,6 +82,8 @@ fun DashboardScreen(
 ) {
     val transactions by viewModel.transactions.collectAsState()
     val isPrivate by viewModel.isPrivate.collectAsState()
+    val milestoneGoal by viewModel.milestoneGoal.collectAsState()
+    val currency by viewModel.currency.collectAsState()
     val scope = rememberCoroutineScope()
     val tooltipState = rememberTooltipState()
     var showAddSheet by remember { mutableStateOf(false) }
@@ -92,12 +95,10 @@ fun DashboardScreen(
         if (transactions.isNotEmpty()) listState.animateScrollToItem(0)
     }
     val totalSats = transactions.sumOf { it.sats }
-    // Use the most recent transaction's currency for the stack card subtitle.
+    // Use the user's selected fiat currency from DataStore (set in Settings).
     // Each history item renders its own currency symbol independently.
-    val stackCurrency = transactions.firstOrNull()?.currency ?: "GBP"
-    val stackSymbol = if (stackCurrency == "GBP") "£" else "$"
-    val totalFiat = transactions.filter { it.currency == stackCurrency }.sumOf { it.fiatAmount }
-    val milestoneGoal = viewModel.milestoneGoal
+    val stackSymbol = currencySymbol(currency)
+    val totalFiat = transactions.filter { it.currency == currency }.sumOf { it.fiatAmount }
     val progress = if (milestoneGoal > 0) (totalSats.toFloat() / milestoneGoal).coerceIn(0f, 1f) else 0f
     val progressPercent = (progress * 100).toInt()
 
@@ -300,7 +301,7 @@ fun DashboardScreen(
 
 @Composable
 private fun TransactionItem(transaction: Transaction) {
-    val currencySymbol = if (transaction.currency == "GBP") "£" else "$"
+    val currencySymbol = currencySymbol(transaction.currency)
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),

@@ -14,13 +14,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -64,7 +64,7 @@ fun VaultScreen(onAuthSuccess: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1A1A1A)),
+            .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.weight(1f))
@@ -74,7 +74,7 @@ fun VaultScreen(onAuthSuccess: () -> Unit) {
                 text = "Sat Stack",
                 fontSize = 52.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.width(10.dp))
             Image(
@@ -88,7 +88,7 @@ fun VaultScreen(onAuthSuccess: () -> Unit) {
             text = "Track your Bitcoin DCA Journey",
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFFF7931A)
+            color = MaterialTheme.colorScheme.primary
         )
 
         Spacer(modifier = Modifier.weight(0.8f))
@@ -96,7 +96,7 @@ fun VaultScreen(onAuthSuccess: () -> Unit) {
         Icon(
             imageVector = Icons.Filled.Fingerprint,
             contentDescription = "Authenticate",
-            tint = Color(0xFFF7931A),
+            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier
                 .size(90.dp)
                 .clickable { prompt.authenticate(promptInfo) }

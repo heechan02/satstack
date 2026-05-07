@@ -1,7 +1,6 @@
 package com.example.satstack.ui.addentry
 
 import android.app.Application
-import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -33,12 +32,6 @@ class AddEntryViewModel(
     fun setSats(v: String) { savedStateHandle["sats"] = v }
     fun setFiat(v: String) { savedStateHandle["fiat"] = v }
     fun setDate(ms: Long) { savedStateHandle["date"] = ms }
-
-    fun setCurrency(c: String) {
-        viewModelScope.launch {
-            dataStore.edit { prefs -> prefs[DataStoreKeys.FIAT_CURRENCY] = c }
-        }
-    }
 
     /** Returns true if validation passed and insert was launched. */
     fun save(): Boolean {

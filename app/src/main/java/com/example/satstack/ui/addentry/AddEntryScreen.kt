@@ -23,9 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -44,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.satstack.data.currencySymbol
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -66,7 +64,7 @@ fun AddEntrySheetContent(
 
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = selectedDateMs)
     val dateLabel = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(selectedDateMs))
-    val currencySymbol = if (currency == "GBP") "£" else "$"
+    val currencySymbol = currencySymbol(currency)
     val satsLong = satsInput.toLongOrNull() ?: 0L
     val fiatDouble = fiatInput.toDoubleOrNull() ?: 0.0
     val impliedPricePerBtc = if (satsLong > 0) fiatDouble / (satsLong / 100_000_000.0) else 0.0
@@ -124,20 +122,7 @@ fun AddEntrySheetContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text("Amount (Fiat)", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            // androidx.compose.material3:material3
-            SingleChoiceSegmentedButtonRow {
-                listOf("GBP", "USD").forEachIndexed { index, label ->
-                    SegmentedButton(
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = 2),
-                        onClick = { vm.setCurrency(label) },
-                        selected = currency == label,
-                        colors = SegmentedButtonDefaults.colors(
-                            activeContainerColor = Orange,
-                            activeContentColor = Color.Black
-                        )
-                    ) { Text(label) }
-                }
-            }
+            Text(currency, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
         }
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(

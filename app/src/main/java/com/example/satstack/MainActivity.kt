@@ -20,11 +20,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -33,12 +35,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.satstack.data.DataStoreKeys
+import com.example.satstack.data.appDataStore
 import com.example.satstack.nav.Route
 import com.example.satstack.ui.analytics.AnalyticsScreen
 import com.example.satstack.ui.dashboard.DashboardScreen
 import com.example.satstack.ui.settings.SettingsScreen
 import com.example.satstack.ui.theme.SatStackTheme
 import com.example.satstack.ui.vault.VaultScreen
+import kotlinx.coroutines.flow.map
 
 class MainActivity : FragmentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -46,7 +51,11 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            SatStackTheme {
+            val context = LocalContext.current
+            val darkMode by context.appDataStore.data
+                .map { it[DataStoreKeys.DARK_MODE] ?: true }
+                .collectAsState(initial = true)
+            SatStackTheme(darkTheme = darkMode) {
                 val navController = rememberNavController()
                 val backStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = backStackEntry?.destination?.route
