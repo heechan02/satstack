@@ -48,6 +48,7 @@ import com.example.satstack.ui.analytics.AnalyticsScreen
 import com.example.satstack.ui.dashboard.DashboardScreen
 import com.example.satstack.ui.settings.SettingsScreen
 import com.example.satstack.ui.theme.SatStackTheme
+import com.example.satstack.ui.onboarding.OnboardingScreen
 import com.example.satstack.ui.vault.VaultScreen
 import kotlinx.coroutines.flow.map
 
@@ -68,12 +69,17 @@ class MainActivity : FragmentActivity() {
             val darkMode by context.appDataStore.data
                 .map { it[DataStoreKeys.DARK_MODE] ?: true }
                 .collectAsState(initial = true)
+            val onboardingDone by context.appDataStore.data
+                .map { it[DataStoreKeys.ONBOARDING_COMPLETE] ?: false }
+                .collectAsState(initial = null)
             SatStackTheme(darkTheme = darkMode) {
+                if (onboardingDone == null) return@SatStackTheme
+
                 val navController = rememberNavController()
                 val backStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = backStackEntry?.destination?.route
 
-                val showChrome = currentRoute != Route.VAULT.name
+                val showChrome = currentRoute != Route.VAULT.name && currentRoute != Route.ONBOARDING.name
 
                 val navItems = listOf(
                     Triple(Route.DASHBOARD, "Dashboard", Icons.Filled.Home as ImageVector),
@@ -124,9 +130,16 @@ class MainActivity : FragmentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = Route.VAULT.name,
+                        startDestination = if (onboardingDone!!) Route.VAULT.name else Route.ONBOARDING.name,
                         modifier = Modifier.padding(innerPadding)
                     ) {
+                        composable(Route.ONBOARDING.name) {
+                            OnboardingScreen(onComplete = {
+                                navController.navigate(Route.VAULT.name) {
+                                    popUpTo(Route.ONBOARDING.name) { inclusive = true }
+                                }
+                            })
+                        }
                         composable(Route.VAULT.name) {
                             VaultScreen(onAuthSuccess = {
                                 navController.navigate(Route.DASHBOARD.name) {

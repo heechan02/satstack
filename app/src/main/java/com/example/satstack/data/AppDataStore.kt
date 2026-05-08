@@ -14,4 +14,5 @@ object DataStoreKeys {
     val DARK_MODE = booleanPreferencesKey("dark_mode")
     val MILESTONE_GOAL = longPreferencesKey("milestone_goal")
     val EXCHANGE_URL = stringPreferencesKey("exchange_url")
+    val ONBOARDING_COMPLETE = booleanPreferencesKey("onboarding_complete")
 }

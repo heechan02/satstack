@@ -30,6 +30,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -56,6 +57,7 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
     val exchangeUrl by vm.exchangeUrl.collectAsState()
     val isOffline by vm.isOffline.collectAsState()
     val isLoading by vm.isLoading.collectAsState()
+    val loadFailed by vm.loadFailed.collectAsState()
 
     // Register BroadcastReceiver for network state changes — android.net.ConnectivityManager
     DisposableEffect(context) {
@@ -114,6 +116,30 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
                 if (isLoading && fngEntries.isEmpty()) {
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
+                } else if (loadFailed && !isOffline && fngEntries.isEmpty()) {
+                    // Load-failure banner (API/timeout error while online)
+                    Surface(
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Couldn't load data",
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                fontWeight = FontWeight.Medium
+                            )
+                            TextButton(onClick = { vm.refresh() }) {
+                                Text("Retry", color = MaterialTheme.colorScheme.onErrorContainer, fontWeight = FontWeight.Bold)
+                            }
+                        }
                     }
                 } else if (fngEntries.isNotEmpty()) {
                     val current = fngEntries.first()
@@ -281,10 +307,10 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
         // Buy More Sats button
         Button(
             onClick = {
-                val url = exchangeUrl.ifBlank { "https://www.coinbase.com" }
                 // android.content.Intent.ACTION_VIEW to open exchange URL in browser
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(exchangeUrl)))
             },
+            enabled = exchangeUrl.isNotBlank(),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
@@ -292,6 +318,14 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF7931A))
         ) {
             Text("Buy More Sats", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
+        }
+        if (exchangeUrl.isBlank()) {
+            Text(
+                "Set your exchange URL in Settings to enable this",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
         }
 
         Spacer(modifier = Modifier.height(8.dp))

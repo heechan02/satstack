@@ -57,6 +57,9 @@ class AnalyticsViewModel(application: Application) : AndroidViewModel(applicatio
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _loadFailed = MutableStateFlow(false)
+    val loadFailed: StateFlow<Boolean> = _loadFailed.asStateFlow()
+
     fun setConnectivity(isConnected: Boolean) {
         _isOffline.value = !isConnected
     }
@@ -64,6 +67,7 @@ class AnalyticsViewModel(application: Application) : AndroidViewModel(applicatio
     fun refresh() {
         viewModelScope.launch {
             _isLoading.value = true
+            _loadFailed.value = false
             launch { fetchFearAndGreed() }
             launch { fetchPortfolio() }
         }
@@ -101,7 +105,7 @@ class AnalyticsViewModel(application: Application) : AndroidViewModel(applicatio
             _fngEntries.value = entries
             _isOffline.value = false
         } catch (_: Exception) {
-            // network or API error — connectivity state managed by NetworkReceiver
+            _loadFailed.value = true
         } finally {
             _isLoading.value = false
         }
