@@ -156,7 +156,8 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
                         Text(
                             text = "${current.value}",
                             fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -258,7 +259,7 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
                         val pnlPct = if (p.totalSpent > 0) pnl / p.totalSpent * 100 else 0.0
                         val sign = if (pnl >= 0) "+" else ""
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("P&L", fontWeight = FontWeight.Bold)
+                            Text("P&L", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             Text(
                                 text = "$sign$curSymbol${"%,.2f".format(pnl)} ($sign${"%.1f".format(pnlPct)}%)",
                                 color = pnlColor,
@@ -306,7 +307,7 @@ private fun PortfolioRow(label: String, value: String) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+        Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 

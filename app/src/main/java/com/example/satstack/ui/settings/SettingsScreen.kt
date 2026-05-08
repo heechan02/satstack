@@ -51,6 +51,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -144,10 +145,13 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            "Changing currency affects how totals are displayed — your entries keep their original currency.",
+            "Changing currency affects how totals are displayed.\nYour entries keep their original currency.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 4.dp)
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp)
         )
 
         Spacer(modifier = Modifier.height(24.dp))
