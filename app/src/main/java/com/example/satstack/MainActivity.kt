@@ -158,12 +158,14 @@ class MainActivity : FragmentActivity() {
     }
 
     private fun createNotificationChannel() {
-        val channel = NotificationChannel(
-            MILESTONE_CHANNEL_ID,
-            "Milestone Alerts",
-            NotificationManager.IMPORTANCE_HIGH
-        ).apply { description = "Notifies when your sats stack reaches a milestone" }
-        getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                MILESTONE_CHANNEL_ID,
+                "Milestone Alerts",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply { description = "Notifies when your sats stack reaches a milestone" }
+            getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+        }
     }
 
     companion object {

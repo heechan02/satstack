@@ -7,6 +7,7 @@ import android.content.UriMatcher
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
+import androidx.core.net.toUri
 import kotlinx.coroutines.runBlocking
 
 // Custom ContentProvider exposing the Room transactions table.
@@ -15,7 +16,7 @@ class TransactionProvider : ContentProvider() {
 
     companion object {
         const val AUTHORITY = "com.example.satstack.provider"
-        val CONTENT_URI: Uri = Uri.parse("content://$AUTHORITY/transactions")
+        val CONTENT_URI: Uri = "content://$AUTHORITY/transactions".toUri()
 
         private const val TRANSACTIONS = 1
         private const val TRANSACTION_ID = 2
