@@ -48,7 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import android.content.Intent
-import android.net.Uri
+import androidx.core.net.toUri
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.ImeAction
@@ -229,7 +229,7 @@ private fun ExchangeUrlRow(url: String, onUrlChange: (String) -> Unit) {
         Spacer(modifier = Modifier.width(8.dp))
         IconButton(onClick = {
             onUrlChange(draft)
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(draft))
+            val intent = Intent(Intent.ACTION_VIEW, draft.toUri())
             context.startActivity(intent)
         }) {
             Icon(
@@ -372,7 +372,7 @@ private fun MilestoneGoalDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = { if (isValid) onConfirm(parsed ?: return@TextButton) },
+                onClick = { if (isValid) onConfirm(parsed) },
                 enabled = isValid
             ) { Text("Save") }
         },

@@ -3,7 +3,7 @@ package com.example.satstack.ui.analytics
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
-import android.net.Uri
+import androidx.core.net.toUri
 import androidx.compose.foundation.background
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.foundation.layout.Arrangement
@@ -308,7 +308,7 @@ fun AnalyticsScreen(vm: AnalyticsViewModel = viewModel()) {
         Button(
             onClick = {
                 // android.content.Intent.ACTION_VIEW to open exchange URL in browser
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(exchangeUrl)))
+                context.startActivity(Intent(Intent.ACTION_VIEW, exchangeUrl.toUri()))
             },
             enabled = exchangeUrl.isNotBlank(),
             modifier = Modifier
