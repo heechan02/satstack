@@ -347,9 +347,9 @@ private fun ExchangePage(
     }
 }
 
-private fun dateOf(year: Int, month: Int, day: Int): Long {
+private fun dateOf(month: Int, day: Int): Long {
     val cal = java.util.Calendar.getInstance()
-    cal.set(year, month - 1, day, 0, 0, 0)
+    cal.set(2025, month - 1, day, 0, 0, 0)
     cal.set(java.util.Calendar.MILLISECOND, 0)
     return cal.timeInMillis
 }
@@ -357,15 +357,15 @@ private fun dateOf(year: Int, month: Int, day: Int): Long {
 private suspend fun insertSampleData(db: SatStackDatabase, currency: String) {
     val dao = db.transactionDao()
     listOf(
-        Transaction(date = dateOf(2025, 1, 5),  fiatAmount = 50.00,  currency = currency, sats = 52_400L),
-        Transaction(date = dateOf(2025, 2, 3),  fiatAmount = 50.00,  currency = currency, sats = 55_100L),
-        Transaction(date = dateOf(2025, 3, 1),  fiatAmount = 100.00, currency = currency, sats = 108_700L),
-        Transaction(date = dateOf(2025, 4, 7),  fiatAmount = 50.00,  currency = currency, sats = 53_800L),
-        Transaction(date = dateOf(2025, 5, 5),  fiatAmount = 75.00,  currency = currency, sats = 79_200L),
-        Transaction(date = dateOf(2025, 6, 2),  fiatAmount = 50.00,  currency = currency, sats = 51_600L),
-        Transaction(date = dateOf(2025, 7, 7),  fiatAmount = 100.00, currency = currency, sats = 103_500L),
-        Transaction(date = dateOf(2025, 8, 4),  fiatAmount = 50.00,  currency = currency, sats = 49_900L),
-        Transaction(date = dateOf(2025, 9, 1),  fiatAmount = 50.00,  currency = currency, sats = 48_300L),
-        Transaction(date = dateOf(2025, 10, 6), fiatAmount = 75.00,  currency = currency, sats = 71_500L),
+        Transaction(date = dateOf(1, 5),  fiatAmount = 50.00,  currency = currency, sats = 52_400L),
+        Transaction(date = dateOf(2, 3),  fiatAmount = 50.00,  currency = currency, sats = 55_100L),
+        Transaction(date = dateOf(3, 1),  fiatAmount = 100.00, currency = currency, sats = 108_700L),
+        Transaction(date = dateOf(4, 7),  fiatAmount = 50.00,  currency = currency, sats = 53_800L),
+        Transaction(date = dateOf(5, 5),  fiatAmount = 75.00,  currency = currency, sats = 79_200L),
+        Transaction(date = dateOf(6, 2),  fiatAmount = 50.00,  currency = currency, sats = 51_600L),
+        Transaction(date = dateOf(7, 7),  fiatAmount = 100.00, currency = currency, sats = 103_500L),
+        Transaction(date = dateOf(8, 4),  fiatAmount = 50.00,  currency = currency, sats = 49_900L),
+        Transaction(date = dateOf(9, 1),  fiatAmount = 50.00,  currency = currency, sats = 48_300L),
+        Transaction(date = dateOf(10, 6), fiatAmount = 75.00,  currency = currency, sats = 71_500L),
     ).forEach { dao.insert(it) }
 }

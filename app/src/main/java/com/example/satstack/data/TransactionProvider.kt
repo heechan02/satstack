@@ -52,7 +52,7 @@ class TransactionProvider : ContentProvider() {
         val rows = dao.getAllSync()
         val cursor = MatrixCursor(COLUMNS)
         rows.forEach { t ->
-            cursor.addRow(arrayOf(t.id, t.date, t.fiatAmount, t.currency, t.sats))
+            cursor.addRow(arrayOf<Any>(t.id, t.date, t.fiatAmount, t.currency, t.sats))
         }
         return cursor
     }

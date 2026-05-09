@@ -1,7 +1,6 @@
 package com.example.satstack.ui.settings
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -373,7 +372,7 @@ private fun MilestoneGoalDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = { if (isValid) onConfirm(parsed!!) },
+                onClick = { if (isValid) onConfirm(parsed ?: return@TextButton) },
                 enabled = isValid
             ) { Text("Save") }
         },

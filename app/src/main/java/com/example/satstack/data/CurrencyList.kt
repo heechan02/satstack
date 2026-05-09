@@ -12,6 +12,6 @@ val ALL_CURRENCIES: List<Pair<String, String>> =
 // Falls back to the code itself if the device doesn't recognise it.
 fun currencySymbol(code: String): String = try {
     Currency.getInstance(code).symbol
-} catch (e: IllegalArgumentException) {
+} catch (_: IllegalArgumentException) {
     code
 }

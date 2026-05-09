@@ -42,9 +42,6 @@ class AnalyticsViewModel(application: Application) : AndroidViewModel(applicatio
         .map { it[DataStoreKeys.EXCHANGE_URL] ?: "" }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
 
-    val transactions = dao.getAll()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
     private val _fngEntries = MutableStateFlow<List<FngEntry>>(emptyList())
     val fngEntries: StateFlow<List<FngEntry>> = _fngEntries.asStateFlow()
 

@@ -31,7 +31,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
@@ -82,9 +81,9 @@ class MainActivity : FragmentActivity() {
                 val showChrome = currentRoute != Route.VAULT.name && currentRoute != Route.ONBOARDING.name
 
                 val navItems = listOf(
-                    Triple(Route.DASHBOARD, "Dashboard", Icons.Filled.Home as ImageVector),
-                    Triple(Route.ANALYTICS, "Analytics", Icons.Filled.Analytics as ImageVector),
-                    Triple(Route.SETTINGS, "Settings", Icons.Filled.Settings as ImageVector)
+                    Triple(Route.DASHBOARD, "Dashboard", Icons.Filled.Home),
+                    Triple(Route.ANALYTICS, "Analytics", Icons.Filled.Analytics),
+                    Triple(Route.SETTINGS, "Settings", Icons.Filled.Settings)
                 )
 
                 Scaffold(
