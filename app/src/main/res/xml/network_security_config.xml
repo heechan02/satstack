@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Enforces HTTPS for all network traffic.
+    Cleartext (HTTP) is blocked by default; only the two API domains used by this app
+    are explicitly listed to make the intent clear.
+    Reference: https://developer.android.com/training/articles/security-config
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Fear &amp; Greed Index API (alternative.me) -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.alternative.me</domain>
+    </domain-config>
+
+    <!-- Bitcoin price API (CoinGecko) -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.coingecko.com</domain>
+    </domain-config>
+</network-security-config>
