@@ -3,6 +3,7 @@ package com.example.satstack.ui.analytics
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
+// androidx.core:core-ktx
 import androidx.core.net.toUri
 import androidx.compose.foundation.background
 import androidx.compose.runtime.DisposableEffect
@@ -43,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+// androidx.lifecycle:lifecycle-viewmodel-compose
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.text.SimpleDateFormat
 import java.util.Date

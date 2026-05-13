@@ -4,8 +4,10 @@ import android.Manifest
 import android.app.Application
 import android.app.NotificationManager
 import android.content.pm.PackageManager
+// androidx.core:core-ktx
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.AndroidViewModel
+// androidx.lifecycle:lifecycle-runtime-ktx
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.satstack.MainActivity
