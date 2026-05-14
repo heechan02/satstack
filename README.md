@@ -4,6 +4,18 @@ A native Android Bitcoin DCA journal app built with Kotlin and Jetpack Compose.
 
 ---
 
+## App Proposal
+
+[SatStack_App_Proposal.pdf](docs/SatStack_App_Proposal.pdf)
+
+---
+
+## Demo
+
+[![SatStack Demo](https://img.youtube.com/vi/DhsCLw3OQZE/maxresdefault.jpg)](https://www.youtube.com/watch?v=DhsCLw3OQZE)
+
+---
+
 ## Design
 
 <p align="center">
