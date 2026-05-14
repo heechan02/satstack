@@ -4,6 +4,18 @@ A native Android Bitcoin DCA journal app built with Kotlin and Jetpack Compose.
 
 ---
 
+## Design
+
+<p align="center">
+  <img src="docs/Vault.png" width="19%" />
+  <img src="docs/Dashboard 1.png" width="19%" />
+  <img src="docs/Dashboard 2.png" width="19%" />
+  <img src="docs/Add DCA Entry.png" width="19%" />
+  <img src="docs/Analytics 1.png" width="19%" />
+</p>
+
+---
+
 ## Features
 
 - **Onboarding** — guided 4-page setup (currency, milestone goal, exchange URL, optional sample data)
