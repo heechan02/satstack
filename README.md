@@ -1,18 +1,17 @@
 # SatStack
 
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Min SDK](https://img.shields.io/badge/Min%20SDK-24%20(Android%207.0)-brightgreen)
+![Target SDK](https://img.shields.io/badge/Target%20SDK-36%20(Android%2015)-blue)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-purple)
+
 A native Android Bitcoin DCA journal app built with Kotlin and Jetpack Compose.
-
----
-
-## App Proposal
-
-[SatStack_App_Proposal.pdf](docs/SatStack_App_Proposal.pdf)
 
 ---
 
 ## Demo
 
-[![SatStack Demo](https://img.youtube.com/vi/DhsCLw3OQZE/maxresdefault.jpg)](https://www.youtube.com/watch?v=DhsCLw3OQZE)
+[Watch on YouTube](https://www.youtube.com/watch?v=DhsCLw3OQZE)
 
 ---
 
@@ -80,3 +79,9 @@ On first launch, the app requires biometric or PIN authentication to access your
 2. When the prompt appears, open Extended Controls (`...` in the emulator toolbar) → Fingerprint → Touch the Sensor.
 
 **No fingerprint enrolled?** Tap **Use PIN / Password** — the app falls back to device credential automatically.
+
+---
+
+## App Proposal
+
+[SatStack_App_Proposal.pdf](docs/SatStack_App_Proposal.pdf)
